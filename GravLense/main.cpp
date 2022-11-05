@@ -2,8 +2,9 @@
 #include<math.h>
 #include"Reader.h" //—амопальна€ запись в различные форматы(в том числе .bmp дл€ изображений)
 #include"Matrix.h" //—амопальные матрицы, вектора, комплексные числа и кватернионы, авось понадоб€тс€(писал давно, много можно переписать покороче, но зачем))
+#include<functional>
 
-
+using namespace std;
 
 int main()
 {
@@ -16,16 +17,36 @@ int main()
 
 	const double c = 299792458;
 	const double G = 6.67430 * pow(10., -11);
+	const double PI = 3.141592654;
+	
 
-	/*double M = 1;
+	const double K1 = 3472.825799; //c^2/4PIG приведЄнное к ћпк, а то цифры не помещаюца в комп
+
+
+	
 	double Ds = 2;
 	double Dl = 1;
-	double Dls = 1;
-	
-	double tethE = sqrt((4*G*M/(c*c))*(Dls/(Dl*Ds)))
-	*/ //пока что без физики, тестим
+	double Dls = 1; //в ћпк
+	 //пока что без физики, тестим
 
-	double tethE = 1;
+	double Scr = K1 * Ds / (Dl * Dls);
+
+	double csi0 = 1;
+
+
+	function<double(double)> M;
+	function<double(double)> m;
+
+	M = [](double x)
+	{
+		return exp(-(x-1.1)*(x-1.1)/0.3) * 10000;
+	};
+
+	m = [&M, &csi0, &PI, &Scr](double x)
+	{
+		return M(x * csi0) / (PI * csi0 * csi0 * Scr);
+	};
+
 
 	double scale = 20; //пикс. на радиан
 
@@ -45,8 +66,8 @@ int main()
 		{
 			x = i - x0;
 			y = j - y0;
-			rx = sqrt(x * x + y * y) / (scale * tethE); //находим икс из формулы
-			ry = rx - 1 / rx; //сама формула
+			rx = sqrt(x * x + y * y) / (scale * csi0); //находим икс из формулы
+			ry = rx - m(rx) / rx; //сама формула
 
 			x = x * ry / rx; //нахождние координат на сурсе (не домножаю на коеффы, т.к. отношение)
 			y = y * ry / rx;
@@ -85,7 +106,9 @@ int main()
 	rbo.print(image);
 	rbo.close();
 
+	bmp MassDistr(source.widthpx, source.heightpx, source.bpp);
 
+	
 
 
 
