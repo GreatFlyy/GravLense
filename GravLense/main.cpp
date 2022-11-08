@@ -6,6 +6,22 @@
 
 using namespace std;
 
+double gauss(double x)
+{
+	return exp(-x * x);
+}
+
+template<typename T>
+int sign(T x)
+{
+	if (x > 0)
+		return 1;
+	else if (x == 0)
+		return 0;
+	else
+		return -1;
+}
+
 int main()
 {
 	string pathsource = "source.bmp";
@@ -39,7 +55,7 @@ int main()
 
 	M = [](double x)
 	{
-		return exp(-(x-1.1)*(x-1.1)/0.3) * 10000;
+		return 100000*sign(x/1)*sqrt(1 - gauss(x/1))*(sqrt(3.141592654)/2+(31/200)*gauss(x/1)-(341/8000)*gauss(1.41*x/1));
 	};
 
 	m = [&M, &csi0, &PI, &Scr](double x)
