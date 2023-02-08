@@ -3,6 +3,7 @@
 #include<functional>
 #include<math.h>
 #include"Reader.h"
+#include"FFT.h"
 
 using namespace std;
 
@@ -22,7 +23,9 @@ public:
 	double scale;
 	double csi0;
 
-	vector<vector<BYTE>> apply(vector<vector<BYTE>>& source);
+	//virtual void update() = 0;
+
+	//virtual vector<vector<BYTE>> apply(vector<vector<BYTE>>& source) = 0;
 };
 
 class PointMassModel : public Model
@@ -38,7 +41,7 @@ public:
 	void update();
 
 	vector<vector<BYTE>> apply(vector<vector<BYTE>>& source);
-};
+};  
 
 class AxleMassModel : public Model
 {
@@ -55,5 +58,34 @@ public:
 	void update();
 
 	vector<vector<BYTE>> apply(vector<vector<BYTE>>& source);
+};
+
+class GeneralModel : public Model
+{
+public:
+	GeneralModel(vector<vector<double>>& MassDistr, double Dl, double Ds, double Dls, double scale);
+
+	void setMassDistr(vector<vector<double>>& MassDistr);
+
+	vector<vector<double>> apply(const vector<vector<double>>& source);
+
+private:
+	vector<vector<Comp>> MassDistr;
+
+	int N;
+
+	vector<vector<Comp>> ConvolveMaskX;
+	vector<vector<Comp>> ConvolveMaskY;
+
+	//vector<vector<double>> 
+};
+
+
+
+
+class SersicModel
+{
+public:
+	
 };
 

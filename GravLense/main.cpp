@@ -4,6 +4,7 @@
 #include"Matrix.h" //Самопальные матрицы, вектора, комплексные числа и кватернионы, авось понадобятся(писал давно, много можно переписать покороче, но зачем))
 #include<functional>
 #include"Model.h"
+#include"FFT.h" //Самопальный Фурье
 
 using namespace std;
 
@@ -23,60 +24,145 @@ int sign(T x)
 		return -1;
 }
 
+template<typename T>
+int clamp(T x, T d, T u)
+{
+	if (x > u)
+		return u;
+	else if (x < d)
+		return d;
+	else
+		return x;
+}
+
+template<typename T>
+int clamp_d(T x, T d)
+{
+	if (x < d)
+		return d;
+	else
+		return x;
+}
+
+template<typename T>
+int clamp_u(T x, T u)
+{
+	if (x > u)
+		return u;
+	else
+		return x;
+}
+
+
+double sersik(double x, double y, double x0, double y0, double phi, double I, double R, double q, double n)
+{
+	double k = 1.9992 * n - 0.3271;
+
+	x = x - x0;
+	y = y - y0;
+
+	int x1 = x;
+
+	x = x * cos(phi) - y * sin(phi);
+	y = y * cos(phi) + x1 * sin(phi);
+
+	return I * exp(-k * (pow((sqrt(q * x * x + y * y / q)) / R, 1 / n) - 1));
+}
+
+
+//int main()
+//{
+//	string pathsource = "source.bmp";
+//	string pathimage = "image.bmp"; //пути к файлам
+//
+//	read_bmp rbi(pathsource);
+//	bmp source(rbi.read());
+//	rbi.close(); //открытие и чтение картинки источника
+//
+//	const double c = 299792458;
+//	const double G = 6.67430 * pow(10., -11);
+//	const double PI = 3.141592654;
+//
+//	bmp image(256, 256, 24);
+//
+//	for (int j = 0; j < image.heightpx; j++)
+//	{
+//		for (int i = 0; i < image.widthpx; i++)
+//		{
+//			int x = i - 128;
+//			int y = j - 128;
+//
+//			image.pixarr[j][i][1] = sersik(x, y, 0., 0., 0.5,  0.6, 256, 2, 4);
+//		}
+//	}
+//
+//	read_bmp rbo(pathimage);
+//
+//	rbo.print(image);
+//
+//	return 0;
+//}
+
+
+
 int main()
 {
-	string pathsource = "source.bmp";
-	string pathimage = "image.bmp"; //пути к файлам
+	string pathsource = "D:/source/repos/GravLense/GravLense/source.bmp";
+	string pathmass = "D:/source/repos/GravLense/GravLense/lense.bmp";
+	string pathresult = "D:/source/repos/GravLense/GravLense/image.bmp";
 
-	read_bmp rbi(pathsource);
-	bmp source(rbi.read());
-	rbi.close(); //открытие и чтение картинки источника
+	double MassCoeff = (1. / 255.) * 0.1;
+	int N = 128;
 
-	const double c = 299792458;
-	const double G = 6.67430 * pow(10., -11);
-	const double PI = 3.141592654;
+	vector<vector<double>> mass(N, vector<double>(N, 0));
 	
-	AxleMassModel model1([](double x) {return 100000 * 0.8 * (1 - exp(-x * x / 0.8)); }, 64, 64, 1, 2, 1, 20);
+	read_bmp rbm(pathmass);
+	bmp mass_bmp = rbm.read();
+	rbm.close();
 
-	vector<vector<BYTE>> r(source.widthpx, vector<BYTE>(source.heightpx, 0));
-	vector<vector<BYTE>> g(source.widthpx, vector<BYTE>(source.heightpx, 0));
-	vector<vector<BYTE>> b(source.widthpx, vector<BYTE>(source.heightpx, 0));
-
-	for (int i = 0; i < source.widthpx; i++)
+	for (int i = 0; i < mass_bmp.heightpx; i++)
 	{
-		for (int j = 0; j < source.heightpx; j++)
+		for (int j = 0; j < mass_bmp.widthpx; j++)
 		{
-			r[i][j] = (int)source.pixarr[i][j][0];
-			g[i][j] = (int)source.pixarr[i][j][1];
-			b[i][j] = (int)source.pixarr[i][j][2];
+			mass[i][j] = (mass_bmp.pixarr[i][j][0] + mass_bmp.pixarr[i][j][1] + mass_bmp.pixarr[i][j][2]) / 3 * MassCoeff;
 		}
 	}
 
-	r = model1.apply(r);
-	g = model1.apply(g);
-	b = model1.apply(b);
 
-	
+	vector<vector<double>> source_g(N, vector<double>(N, 0));
 
-	bmp image(source.widthpx, source.heightpx, source.bpp);
+	read_bmp rbs(pathsource);
+	bmp source_bmp = rbs.read();
+	rbs.close();
 
-	for (int i = 0; i < source.widthpx; i++)
+	for (int i = 0; i < mass_bmp.heightpx; i++)
 	{
-		for (int j = 0; j < source.heightpx; j++)
+		for (int j = 0; j < mass_bmp.widthpx; j++)
 		{
-			image.pixarr[i][j][0] = r[i][j];
-			image.pixarr[i][j][1] = g[i][j];
-			image.pixarr[i][j][2] = b[i][j];
+			source_g[i][j] = source_bmp.pixarr[i][j][1];
 		}
 	}
-	
-	read_bmp rbo(pathimage);
-	rbo.print(image);
+
+
+	cout << "making model" << endl;
+	GeneralModel GM(mass, 2, 1, 1, 1);
+
+	cout << "applying model" << endl;
+	vector<vector<double>> result = GM.apply(source_g);
+
+	bmp output(source_bmp.widthpx, source_bmp.heightpx, source_bmp.bpp);
+
+	for (int i = 0; i < mass_bmp.heightpx; i++)
+	{
+		for (int j = 0; j < mass_bmp.widthpx; j++)
+		{
+			output.pixarr[i][j][1] = result[i][j];
+		}
+	}
+
+	read_bmp rbo(pathresult);
+	rbo.print(output);
 	rbo.close();
-
-	bmp MassDistr(source.widthpx, source.heightpx, source.bpp);
-
-	
 
 
 
