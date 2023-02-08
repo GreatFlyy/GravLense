@@ -5,69 +5,11 @@
 #include<functional>
 #include"Model.h"
 #include"FFT.h" //Самопальный Фурье
+#include"Utils.h"
 
 using namespace std;
 
-double gauss(double x)
-{
-	return exp(-x * x);
-}
 
-template<typename T>
-int sign(T x)
-{
-	if (x > 0)
-		return 1;
-	else if (x == 0)
-		return 0;
-	else
-		return -1;
-}
-
-template<typename T>
-int clamp(T x, T d, T u)
-{
-	if (x > u)
-		return u;
-	else if (x < d)
-		return d;
-	else
-		return x;
-}
-
-template<typename T>
-int clamp_d(T x, T d)
-{
-	if (x < d)
-		return d;
-	else
-		return x;
-}
-
-template<typename T>
-int clamp_u(T x, T u)
-{
-	if (x > u)
-		return u;
-	else
-		return x;
-}
-
-
-double sersik(double x, double y, double x0, double y0, double phi, double I, double R, double q, double n)
-{
-	double k = 1.9992 * n - 0.3271;
-
-	x = x - x0;
-	y = y - y0;
-
-	int x1 = x;
-
-	x = x * cos(phi) - y * sin(phi);
-	y = y * cos(phi) + x1 * sin(phi);
-
-	return I * exp(-k * (pow((sqrt(q * x * x + y * y / q)) / R, 1 / n) - 1));
-}
 
 
 //int main()
@@ -111,20 +53,21 @@ int main()
 	string pathmass = "D:/source/repos/GravLense/GravLense/lense.bmp";
 	string pathresult = "D:/source/repos/GravLense/GravLense/image.bmp";
 
-	double MassCoeff = (1. / 255.) * 0.5;
+	//double MassCoeff = (1. / 255.) * 0.5;
+	double MassCoeff = 3.;
 	int N = 128;
 
 	vector<vector<double>> mass(N, vector<double>(N, 0));
 	
-	read_bmp rbm(pathmass);
-	bmp mass_bmp = rbm.read();
-	rbm.close();
+	//read_bmp rbm(pathmass);
+	//bmp mass_bmp = rbm.read();
+	//rbm.close();
 
-	for (int i = 0; i < mass_bmp.heightpx; i++)
+	for (int i = 0; i < N; i++)
 	{
-		for (int j = 0; j < mass_bmp.widthpx; j++)
+		for (int j = 0; j < N; j++)
 		{
-			mass[i][j] = (mass_bmp.pixarr[i][j][0] + mass_bmp.pixarr[i][j][1] + mass_bmp.pixarr[i][j][2]) / 3 * MassCoeff;
+			mass[i][j] = gauss2d(i, j, 60, 70, 6, 1, 0.84) * MassCoeff;
 		}
 	}
 
@@ -135,9 +78,9 @@ int main()
 	bmp source_bmp = rbs.read();
 	rbs.close();
 
-	for (int i = 0; i < mass_bmp.heightpx; i++)
+	for (int i = 0; i < N; i++)
 	{
-		for (int j = 0; j < mass_bmp.widthpx; j++)
+		for (int j = 0; j < N; j++)
 		{
 			source_g[i][j] = source_bmp.pixarr[i][j][1];
 		}
@@ -153,9 +96,9 @@ int main()
 
 	bmp output(source_bmp.widthpx, source_bmp.heightpx, source_bmp.bpp);
 
-	for (int i = 0; i < mass_bmp.heightpx; i++)
+	for (int i = 0; i < N; i++)
 	{
-		for (int j = 0; j < mass_bmp.widthpx; j++)
+		for (int j = 0; j < N; j++)
 		{
 			output.pixarr[i][j][1] = result[i][j];
 		}
