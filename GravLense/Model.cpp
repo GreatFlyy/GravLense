@@ -222,9 +222,14 @@ void GeneralModel::setMassDistr(vector<vector<double>>& MassDistr)
 	fft2(this->ConvolveMaskY, -1);
 }
 
-vector<vector<double>> GeneralModel::apply(const vector<vector<double>>& source)
+void GeneralModel::apply(const vector<vector<double>>& source, vector<vector<double>>& output)
 {
-	vector<vector<double>> output = vector<vector<double>>(N, vector<double>(N, 0));
+	//vector<vector<double>> output = vector<vector<double>>(N, vector<double>(N, 0));
+	if (output.size() < N || output[0].size() < N)
+	{
+		cout << "Model.cpp/230row/wrongsize" << endl;
+		return;
+	}
 
 	for (int i = 0; i < N; i++)
 	{
@@ -253,6 +258,4 @@ vector<vector<double>> GeneralModel::apply(const vector<vector<double>>& source)
 			}
 		}
 	}
-
-	return output;
 }

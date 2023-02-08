@@ -111,7 +111,7 @@ int main()
 	string pathmass = "D:/source/repos/GravLense/GravLense/lense.bmp";
 	string pathresult = "D:/source/repos/GravLense/GravLense/image.bmp";
 
-	double MassCoeff = (1. / 255.) * 0.1;
+	double MassCoeff = (1. / 255.) * 0.5;
 	int N = 128;
 
 	vector<vector<double>> mass(N, vector<double>(N, 0));
@@ -143,12 +143,13 @@ int main()
 		}
 	}
 
+	vector<vector<double>> result(N, vector<double>(N, 0));
 
 	cout << "making model" << endl;
 	GeneralModel GM(mass, 2, 1, 1, 1);
 
 	cout << "applying model" << endl;
-	vector<vector<double>> result = GM.apply(source_g);
+	GM.apply(source_g, result);
 
 	bmp output(source_bmp.widthpx, source_bmp.heightpx, source_bmp.bpp);
 

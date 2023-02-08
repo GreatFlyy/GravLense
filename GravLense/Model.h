@@ -67,7 +67,7 @@ public:
 
 	void setMassDistr(vector<vector<double>>& MassDistr);
 
-	vector<vector<double>> apply(const vector<vector<double>>& source);
+	void apply(const vector<vector<double>>& source, vector<vector<double>>& output);
 
 private:
 	vector<vector<Comp>> MassDistr;
