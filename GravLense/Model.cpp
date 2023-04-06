@@ -152,7 +152,7 @@ GeneralModel::GeneralModel(vector<vector<double>>& MassDistr, double Dl, double 
 	
 	this->N = MassDistr.size();
 
-	this->MassDistr = vector<vector<Comp>>(N, vector<Comp>(N, 0));
+	this->MassDistr = vector<vector<Comp>>(N, vector<Comp>(N, 0)); //v pixelah na kartinke
 
 	this->ConvolveMaskX = vector<vector<Comp>>(N, vector<Comp>(N, 0));
 	this->ConvolveMaskY = vector<vector<Comp>>(N, vector<Comp>(N, 0));

@@ -54,7 +54,7 @@ int main()
 	string pathresult = "D:/source/repos/GravLense/GravLense/image.bmp";
 
 	//double MassCoeff = (1. / 255.) * 0.5;
-	double MassCoeff = 3.;
+	double MassCoeff = 0.;
 	int N = 128;
 
 	vector<vector<double>> mass(N, vector<double>(N, 0));
@@ -62,6 +62,13 @@ int main()
 	//read_bmp rbm(pathmass);
 	//bmp mass_bmp = rbm.read();
 	//rbm.close();
+
+
+	//GalaxyB SrcG(60, 50, 2, 30, 100, 0.7);
+
+
+
+
 
 	for (int i = 0; i < N; i++)
 	{
@@ -74,17 +81,30 @@ int main()
 
 	vector<vector<double>> source_g(N, vector<double>(N, 0));
 
-	read_bmp rbs(pathsource);
-	bmp source_bmp = rbs.read();
-	rbs.close();
 
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
 		{
-			source_g[i][j] = source_bmp.pixarr[i][j][1];
+			//source_g[i][j] = SrcG.GetI(i, j);
 		}
 	}
+
+
+
+
+
+	read_bmp rbs(pathsource);
+	bmp source_bmp = rbs.read();
+	rbs.close();
+
+	/*for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			source_g[i][j] = source_bmp.pixarr[i][j][1];
+		}
+	}*/
 
 	vector<vector<double>> result(N, vector<double>(N, 0));
 
