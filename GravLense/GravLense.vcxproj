@@ -144,6 +144,7 @@
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Reader.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FFT.h" />

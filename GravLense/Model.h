@@ -5,9 +5,11 @@
 #include"Reader.h"
 #include"FFT.h"
 #include"Matrix.h"
-//#include"Utils.h"
+#include"Utils.h"
 
 using namespace std;
+
+
 
 const double c = 299792458;
 const double G = 6.67430 * pow(10., -11);
@@ -114,10 +116,7 @@ public:
 		this->q = q;
 	}
 
-	double GetI(double x, double y)
-	{
-		return sersik(x, y, x0, y0, theta, I0, R, q, 4);
-	};
+	double GetI(double x, double y);
 };
 
 
@@ -162,15 +161,9 @@ public:
 		this->M = M;
 	}
 
-	double GetI(double x, double y)
-	{
-		return sersik(x, y, x0, y0, theta, I0, R, q, 4);
-	}
+	double GetI(double x, double y);
 
-	double GetK(double x, double y)
-	{
-		return M * gauss2d(x, y, x0, y0, s / sqrt(q), s * sqrt(q), theta);
-	}
+	double GetK(double x, double y);
 };
 
 

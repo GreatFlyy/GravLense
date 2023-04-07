@@ -1,3 +1,4 @@
+#pragma once
 #include<iostream>
 #include<math.h>
 #include"Reader.h" //Самопальная запись в различные форматы(в том числе .bmp для изображений)
@@ -5,7 +6,6 @@
 #include<functional>
 #include"Model.h"
 #include"FFT.h" //Самопальный Фурье
-#include"Utils.h"
 
 using namespace std;
 
@@ -54,7 +54,7 @@ int main()
 	string pathresult = "D:/source/repos/GravLense/GravLense/image.bmp";
 
 	//double MassCoeff = (1. / 255.) * 0.5;
-	double MassCoeff = 0.;
+	double MassCoeff = 3.;
 	int N = 128;
 
 	vector<vector<double>> mass(N, vector<double>(N, 0));
@@ -64,17 +64,18 @@ int main()
 	//rbm.close();
 
 
-	//GalaxyB SrcG(60, 50, 2, 30, 100, 0.7);
+	GalaxyB SrcG(60, 50, 2, 30, 10, 0.7);
 
+	GalaxyL LnsG(70, 60, 0.2, 50, 15, 0.3, 10, 1);
 
-
+	
 
 
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
 		{
-			mass[i][j] = gauss2d(i, j, 60, 70, 6, 1, 0.84) * MassCoeff;
+			mass[i][j] = LnsG.GetK(i, j);
 		}
 	}
 
@@ -86,7 +87,7 @@ int main()
 	{
 		for (int j = 0; j < N; j++)
 		{
-			//source_g[i][j] = SrcG.GetI(i, j);
+			source_g[i][j] = SrcG.GetI(i, j);
 		}
 	}
 
@@ -120,7 +121,9 @@ int main()
 	{
 		for (int j = 0; j < N; j++)
 		{
-			output.pixarr[i][j][1] = result[i][j];
+			output.pixarr[i][j][1] = result[i][j] + LnsG.GetI(i, j);
+			//output.pixarr[i][j][2] = LnsG.GetI(i, j);
+			//output.pixarr[i][j][0] = LnsG.GetK(i, j)*500;
 		}
 	}
 

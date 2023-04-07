@@ -259,3 +259,32 @@ void GeneralModel::apply(const vector<vector<double>>& source, vector<vector<dou
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+double GalaxyB::GetI(double x, double y)
+{
+	return sersik(x, y, x0, y0, theta, I0, R, q, 4);
+};
+
+
+
+double GalaxyL::GetI(double x, double y)
+{
+	return sersik(x, y, x0, y0, theta, I0, R, q, 4);
+}
+
+double GalaxyL::GetK(double x, double y)
+{
+	return M * gauss2d(x, y, x0, y0, s / sqrt(q), s * sqrt(q), theta);
+}
