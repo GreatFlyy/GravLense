@@ -1,4 +1,6 @@
 #pragma once
+
+#include<CCfits/CCfits>
 #include<iostream>
 #include<math.h>
 #include"Reader.h" //Самопальная запись в различные форматы(в том числе .bmp для изображений)
@@ -6,6 +8,7 @@
 #include<functional>
 #include"Model.h"
 #include"FFT.h" //Самопальный Фурье
+#include "FitsUt.h"
 
 using namespace std;
 
@@ -69,6 +72,7 @@ int main()
 	GalaxyL LnsG(70, 60, 0.2, 50, 15, 0.3, 10, 1);
 
 	
+	
 
 
 	for (int i = 0; i < N; i++)
@@ -115,23 +119,35 @@ int main()
 	cout << "applying model" << endl;
 	GM.apply(source_g, result);
 
-	bmp output(source_bmp.widthpx, source_bmp.heightpx, source_bmp.bpp);
+	//bmp output(source_bmp.widthpx, source_bmp.heightpx, source_bmp.bpp);
+
+	//for (int i = 0; i < N; i++)
+	//{
+	//	for (int j = 0; j < N; j++)
+	//	{
+	//		output.pixarr[i][j][1] = result[i][j] + LnsG.GetI(i, j);
+	//		//output.pixarr[i][j][2] = LnsG.GetI(i, j);
+	//		//output.pixarr[i][j][0] = LnsG.GetK(i, j)*500;
+	//	}
+	//}
+
+	//read_bmp rbo(pathresult);
+	//rbo.print(output);
+	//rbo.close();
 
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
 		{
-			output.pixarr[i][j][1] = result[i][j] + LnsG.GetI(i, j);
+			result[i][j] = result[i][j] + LnsG.GetI(i, j);
 			//output.pixarr[i][j][2] = LnsG.GetI(i, j);
 			//output.pixarr[i][j][0] = LnsG.GetK(i, j)*500;
 		}
 	}
 
-	read_bmp rbo(pathresult);
-	rbo.print(output);
-	rbo.close();
+	string pathuuu = "D:/OUTPUT1.fits";
 
-
+	writeImage(result, pathuuu);
 
 	return 0;
 }
