@@ -67,9 +67,12 @@ public:
 class GeneralModel : public Model
 {
 public:
+	GeneralModel();
 	GeneralModel(vector<vector<double>>& MassDistr, double Dl, double Ds, double Dls, double scale);
+	GeneralModel(function<double(double, double)>& massfunc, int N, double Dl, double Ds, double Dls, double scale);
 
 	void setMassDistr(vector<vector<double>>& MassDistr);
+	void setMassDistr(function<double(double, double)>& massfunc);
 
 	void apply(const vector<vector<double>>& source, vector<vector<double>>& output);
 
@@ -104,6 +107,11 @@ public:
 		R = 1;
 		I0 = 1;
 		q = 1;
+
+		this->GetI = [&](double x, double y)
+		{
+			return sersik(x, y, x0, y0, theta, I0, R, q, 4);
+		};
 	}
 
 	GalaxyB(double x0, double y0, double theta, double R, double I0, double q)
@@ -114,9 +122,14 @@ public:
 		this->R = R;
 		this->I0 = I0;
 		this->q = q;
+
+		this->GetI = [&](double x, double y)
+		{
+			return sersik(x, y, this->x0, this->y0, this->theta, this->I0, this->R, this->q, 4);
+		};
 	}
 
-	double GetI(double x, double y);
+	function<double(double, double)> GetI;
 };
 
 
@@ -132,10 +145,11 @@ public:
 
 	double R;
 	double I0;
-	double q;
+	double qI;
 
 	double s;
 	double M;
+	double qM;
 
 	GalaxyL()
 	{
@@ -144,26 +158,81 @@ public:
 		theta = 0;
 		R = 1; 
 		I0 = 1;
-		q = 1;
+		qI = 1;
 		s = 1;
 		M = 1;
+		qM = 1;
+
+		this->GetI = [&](double x, double y)
+		{
+			return sersik(x, y, x0, y0, theta, I0, R, qI, 4);
+		};
+
+		this->GetK = [&](double x, double y)
+		{
+			return M * gauss2d(x, y, x0, y0, s / sqrt(qM), s * sqrt(qM), theta);
+		};
 	}
 
-	GalaxyL(double x0, double y0, double theta, double R, double I0, double q, double s, double M)
+	GalaxyL(double x0, double y0, double theta, double R, double I0, double qI, double s, double M, double qM)
 	{
 		this->x0 = x0;
 		this->y0 = y0;
 		this->theta = theta;
 		this->R = R;
 		this->I0 = I0;
-		this->q = q;
+		this->qI = qI;
 		this->s = s;
 		this->M = M;
+		this->qM = qM;
+
+		this->GetI = [&](double x, double y)
+		{
+			return sersik(x, y, this->x0, this->y0, this->theta, this->I0, this->R, this->qI, 4);
+		};
+
+		this->GetK = [&](double x, double y)
+		{
+			return (this->M * gauss2d(x, y, this->x0, this->y0, this->s / sqrt(this->qM), this->s * sqrt(this->qM), this->theta));
+		};
 	}
 
-	double GetI(double x, double y);
+	function<double(double, double)> GetI;
 
-	double GetK(double x, double y);
+	function<double(double, double)> GetK;
 };
 
 
+
+
+
+class PModel
+{
+public:
+	GalaxyB source;
+	GalaxyL lense;
+	GeneralModel MassModel;
+	int n;
+	int nm;
+	vector<vector<double>> data;
+	int N;
+
+	PModel(vector<double>& par, vector<vector<double>>& data);
+
+	void SetP(vector<double>& par, bool needtochangemass);
+
+private:
+	vector<vector<double>> sb;
+	vector<vector<double>> rb;
+
+public:
+	double xisq();
+
+	void grad(vector<double>& x0, vector<double>& delta, vector<double>& res);
+
+	void step(vector<double>& x0, vector<double>& delta, vector<double>& _grad, double r);
+
+	void BBstep(vector<double>& x0, vector<double>& x0prev, vector<double>& _grad, vector<double>& _gradprev, vector<double>& delta);
+	
+	void Mstep(vector<double>& x0, vector<double>& x0prev, vector<double>& _grad, vector<double>& delta, double r, double v);
+};

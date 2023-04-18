@@ -9,6 +9,7 @@
 #include"Model.h"
 #include"FFT.h" //Самопальный Фурье
 #include "FitsUt.h"
+#include<ctime>
 
 using namespace std;
 
@@ -67,13 +68,9 @@ int main()
 	//rbm.close();
 
 
-	GalaxyB SrcG(60, 50, 2, 30, 10, 0.7);
+	GalaxyB SrcG(60, 50, 2, 30, 5, 0.7);
 
-	GalaxyL LnsG(70, 60, 0.2, 50, 15, 0.3, 10, 1);
-
-	
-	
-
+	GalaxyL LnsG(62, 54, 0.2, 50, 20, 0.5, 15, 0.4, 0.8);
 
 	for (int i = 0; i < N; i++)
 	{
@@ -83,9 +80,7 @@ int main()
 		}
 	}
 
-
 	vector<vector<double>> source_g(N, vector<double>(N, 0));
-
 
 	for (int i = 0; i < N; i++)
 	{
@@ -94,10 +89,6 @@ int main()
 			source_g[i][j] = SrcG.GetI(i, j);
 		}
 	}
-
-
-
-
 
 	read_bmp rbs(pathsource);
 	bmp source_bmp = rbs.read();
@@ -145,7 +136,15 @@ int main()
 		}
 	}
 
-	string pathuuu = "D:/OUTPUT1.fits";
+	string pathuuu = "D:/OUTPUT";
+
+	srand(time(NULL)*(time(NULL) + 42732834) * (time(NULL) + 2354263));
+
+	int ggg = 0;
+	ggg = rand() % 100;
+
+	pathuuu += to_string(ggg);
+	pathuuu += ".fits";
 
 	writeImage(result, pathuuu);
 

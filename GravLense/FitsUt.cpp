@@ -1,8 +1,8 @@
 #include"FitsUt.h"
 
-int readImage(std::vector<std::vector<double>>& output, std::auto_ptr<FITS>& pInfile, short nExt)
+int readImage(std::vector<std::vector<double>>& output, std::string& path, short nExt)
 {
-    //std::auto_ptr<FITS> pInfile(new FITS("C:/Users/GreatFly/Desktop/HST/MAST_2022-11-10T0750/HST/na1l91010/na1l91010_mos.fits", Read, true));
+    std::auto_ptr<FITS> pInfile(new FITS(path, Read, true));
     ExtHDU& image = pInfile->extension(nExt);
     std::valarray<double>  contents(1, 0);
     // read all user-specifed, coordinate, and checksum keys in the image
