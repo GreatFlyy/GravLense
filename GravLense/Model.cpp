@@ -359,13 +359,45 @@ void GeneralModel::apply(const vector<vector<double>>& source, vector<vector<dou
 
 				output[i][j] = vals[0] * (1 - x - y + x * y) + vals[1] * (y - x * y) + vals[2] * (x - x * y) + vals[3] * (x * y);
 			}
+			else
+			{
+				output[i][j] = 0;
+			}
 		}
 	}
 }
 
 
 
+GalaxyB::GalaxyB()
+{
+	x0 = 0;
+	y0 = 0;
+	theta = 0;
+	R = 1;
+	I0 = 1;
+	q = 1;
 
+	this->GetIb = [&](double x, double y)
+	{
+		return sersik(x, y, x0, y0, theta, I0, R, q, 4);
+	};
+}
+
+GalaxyB::GalaxyB(double _x0, double _y0, double _theta, double _R, double _I0, double _q)
+{
+	this->x0 = _x0;
+	this->y0 = _y0;
+	this->theta = _theta;
+	this->R = _R;
+	this->I0 = _I0;
+	this->q = _q;
+
+	this->GetIb = [&](double x, double y)
+	{
+		return sersik(x, y, this->x0, this->y0, this->theta, this->I0, this->R, this->q, 4);
+	};
+}
 
 
 
@@ -396,8 +428,23 @@ PModel::PModel(vector<double>& par, vector<vector<double>>& data)
 	}
 
 	
-	this->source = GalaxyB(par[0], par[1], par[2], par[3], par[4], par[5]);
-	this->lense = GalaxyL(par[6], par[7], par[8], par[9], par[10], par[11], par[12], par[13], par[14]);
+	this->source.x0 = par[0];
+	this->source.y0 = par[1];
+	this->source.theta = par[2];
+	this->source.R = par[3];
+	this->source.I0 = par[4];
+	this->source.q = par[5];
+
+	this->lense.x0 = par[6];
+	this->lense.y0 = par[7];
+	this->lense.theta = par[8];
+	this->lense.R = par[9];
+	this->lense.I0 = par[10];
+	this->lense.qI = par[11];
+	this->lense.s = par[12];
+	this->lense.M = par[13];
+	this->lense.qM = par[14];
+
 	this->MassModel = GeneralModel(this->lense.GetK, data.size(), 1., 2., 1., 1.);
 	this->data = data;
 	this->N = data.size();
@@ -443,7 +490,7 @@ double PModel::xisq()
 	{
 		for (int j = 0; j < N; j++)
 		{
-			sb[i][j] = source.GetI(i, j);
+			sb[i][j] = source.GetIb(i, j);
 		}
 	}
 	this->MassModel.apply(sb, rb);
@@ -453,6 +500,10 @@ double PModel::xisq()
 		{
 			rb[i][j] += lense.GetI(i, j);
 			res += pow(data[i][j] - rb[i][j], 2.);
+			/*if (isnan(res))
+			{
+				cout << "aaaaaaa" << endl;
+			}*/
 		}
 	}
 	return res;
@@ -513,6 +564,18 @@ void PModel::Mstep(vector<double>& x0, vector<double>& x0prev, vector<double>& _
 	for (int i = 0; i < n; i++)
 	{
 		x0[i] = x0[i] - r * _grad[i] + v * (x0[i] - x0prev[i]);
+		if (x0[5] < 0)
+		{
+			x0[5] = -x0[5];
+		}
+		if (x0[11] < 0)
+		{
+			x0[11] = -x0[11];
+		}
+		if (x0[14] < 0)
+		{
+			x0[14] = -x0[14];
+		}
 	}
 	this->SetP(x0, true);
 }

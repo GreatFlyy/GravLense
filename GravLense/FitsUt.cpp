@@ -1,10 +1,10 @@
 #include"FitsUt.h"
 
-int readImage(std::vector<std::vector<double>>& output, std::string& path, short nExt)
+int readImageP(std::vector<std::vector<double>>& output, std::string& path)
 {
     std::auto_ptr<FITS> pInfile(new FITS(path, Read, true));
-    ExtHDU& image = pInfile->extension(nExt);
-    std::valarray<double>  contents(1, 0);
+    PHDU& image = pInfile->pHDU();
+    std::valarray<double>  contents;
     // read all user-specifed, coordinate, and checksum keys in the image
     image.readAllKeys();
     image.read(contents);
@@ -21,6 +21,33 @@ int readImage(std::vector<std::vector<double>>& output, std::string& path, short
         for (int i = 0; i < ax1; i++)
         {
             output[j][i] = contents[j * ax1 + i];
+        }
+    }
+    return 0;
+}
+
+int readImageE(std::vector<std::vector<double>>& output, std::string& path, short nExt)
+{
+    std::auto_ptr<FITS> pInfile(new FITS(path, Read, true));
+    ExtHDU& image = pInfile->extension(nExt);
+    std::valarray<double>  contents;
+    // read all user-specifed, coordinate, and checksum keys in the image
+    image.readAllKeys();
+    image.read(contents);
+    // this doesn't print the data, just header info.
+    std::cout << image << std::endl;
+
+    long ax1(image.axis(0));
+    long ax2(image.axis(1));
+
+    output.clear();
+    output = std::vector<std::vector<double>>(ax2, std::vector<double>(ax1, 0.));
+
+    for (int j = 0; j < ax2; j++)
+    {
+        for (int i = 0; i < ax1; i++)
+        {
+            output[j][i] = 600 * contents[j * ax1 - j + i];
         }
     }
     return 0;

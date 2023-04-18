@@ -50,8 +50,123 @@ using namespace std;
 //}
 
 
+int notmain();
+
+
 
 int main()
+{
+	//notmain();
+
+	vector<vector<double>> data(128, vector<double>(128, 0));
+
+	//string pathin = "C:/Users/GreatFly/Desktop/HST/MAST_2022-11-10T0750/HST/na1l91010/na1l91010_mos.fits";
+	//readImageE(picture, pathin, 1);
+
+	string pathin = "D:/INPUT.fits";
+	readImageP(data, pathin);
+
+	vector<double> x0(15, 1);
+	x0[0] = 60;
+	x0[1] = 50;
+	x0[2] = 2;
+	x0[3] = 30;
+	x0[4] = 5;
+	x0[5] = 0.7;
+	x0[6] = 62;
+	x0[7] = 54;
+	x0[8] = 0.2;
+	x0[9] = 50;
+	x0[10] = 20;
+	x0[11] = 0.5;
+	x0[12] = 15;
+	x0[13] = 0.4;
+	x0[14] = 0.8;
+	PModel M(x0, data);
+	
+
+	vector<double> delta(15, 0.00001);
+	vector<double> _grad(15, 0);
+
+	vector<double> x0prev(15, 0);
+	vector<double> _gradprev(15, 0);
+
+	long double xisq0 = 0;
+	long double xisq1 = 0;
+
+	double rate = 1e-13;
+	double v = 0;
+
+	cout << "x0:" << endl;
+	for (int j = 0; j < M.n; j++)
+	{
+		cout << x0[j] << endl;
+	}
+
+	for (int k = 0; k < 1; k++)
+	{
+		M.Mstep(x0, x0prev, _grad,  delta, rate, v);
+
+		xisq1 = M.xisq();
+		cout << "xisq = " << xisq1 << "; deltaxisq = " << xisq1 - xisq0 << "; rate = " << rate << endl;
+
+		cout << "x0:" << endl;
+		for (int j = 0; j < M.n; j++)
+		{
+			cout << x0[j] << endl;
+		}
+
+		if (xisq1 - xisq0 > 0)
+		{
+			rate = rate / 1.3;
+		}
+		else
+		{
+			rate *= 1.01;
+		}
+
+		xisq0 = xisq1;
+	}
+
+	vector<vector<double>> box(M.N, vector<double>(M.N, 0));
+	vector<vector<double>> picture(M.N, vector<double>(M.N, 0));
+
+	for (int i = 0; i < M.N; i++)
+	{
+		for (int j = 0; j < M.N; j++)
+		{
+			box[i][j] = M.source.GetIb(i, j);
+		}
+	}
+	M.MassModel.apply(box, picture);
+	for (int i = 0; i < M.N; i++)
+	{
+		for (int j = 0; j < M.N; j++)
+		{
+			picture[i][j] += M.lense.GetI(i, j);
+		}
+	}
+
+
+
+	string pathuuu = "D:/OUTPUT";
+
+	srand(time(NULL)*(time(NULL) + 42732834) * (time(NULL) + 2354263));
+
+	int ggg = 0;
+	ggg = rand() % 100;
+
+	pathuuu += to_string(ggg);
+	pathuuu += ".fits";
+
+	writeImage(picture, pathuuu);
+
+	return 0;
+}
+
+
+
+int notmain()
 {
 	string pathsource = "D:/source/repos/GravLense/GravLense/source.bmp";
 	string pathmass = "D:/source/repos/GravLense/GravLense/lense.bmp";
@@ -62,7 +177,7 @@ int main()
 	int N = 128;
 
 	vector<vector<double>> mass(N, vector<double>(N, 0));
-	
+
 	//read_bmp rbm(pathmass);
 	//bmp mass_bmp = rbm.read();
 	//rbm.close();
@@ -86,7 +201,7 @@ int main()
 	{
 		for (int j = 0; j < N; j++)
 		{
-			source_g[i][j] = SrcG.GetI(i, j);
+			source_g[i][j] = SrcG.GetIb(i, j);
 		}
 	}
 
@@ -136,9 +251,9 @@ int main()
 		}
 	}
 
-	string pathuuu = "D:/OUTPUT";
+	string pathuuu = "D:/OUTPUTT";
 
-	srand(time(NULL)*(time(NULL) + 42732834) * (time(NULL) + 2354263));
+	srand(time(NULL) * (time(NULL) + 42732834) * (time(NULL) + 2354263));
 
 	int ggg = 0;
 	ggg = rand() % 100;

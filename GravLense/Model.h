@@ -99,37 +99,11 @@ public:
 	double I0;
 	double q;
 
-	GalaxyB()
-	{
-		x0 = 0;
-		y0 = 0;
-		theta = 0;
-		R = 1;
-		I0 = 1;
-		q = 1;
+	GalaxyB();
 
-		this->GetI = [&](double x, double y)
-		{
-			return sersik(x, y, x0, y0, theta, I0, R, q, 4);
-		};
-	}
+	GalaxyB(double _x0, double _y0, double _theta, double _R, double _I0, double _q);
 
-	GalaxyB(double x0, double y0, double theta, double R, double I0, double q)
-	{
-		this->x0 = x0;
-		this->y0 = y0;
-		this->theta = theta;
-		this->R = R;
-		this->I0 = I0;
-		this->q = q;
-
-		this->GetI = [&](double x, double y)
-		{
-			return sersik(x, y, this->x0, this->y0, this->theta, this->I0, this->R, this->q, 4);
-		};
-	}
-
-	function<double(double, double)> GetI;
+	function<double(double, double)> GetIb;
 };
 
 
