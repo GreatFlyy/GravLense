@@ -139,7 +139,7 @@ public:
 
 		this->GetI = [&](double x, double y)
 		{
-			return sersik(x, y, x0, y0, theta, I0, R, qI, 4);
+			return ssersik(x, y, x0, y0, theta, I0, R, qI, 4, 0.5);
 		};
 
 		this->GetK = [&](double x, double y)
@@ -162,7 +162,8 @@ public:
 
 		this->GetI = [&](double x, double y)
 		{
-			return sersik(x, y, this->x0, this->y0, this->theta, this->I0, this->R, this->qI, 4);
+
+			return ssersik(x, y, this->x0, this->y0, this->theta, this->I0, this->R, this->qI, 4, 0.5);
 		};
 
 		this->GetK = [&](double x, double y)

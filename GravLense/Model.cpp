@@ -380,7 +380,7 @@ GalaxyB::GalaxyB()
 
 	this->GetIb = [&](double x, double y)
 	{
-		return sersik(x, y, x0, y0, theta, I0, R, q, 4);
+		return ssersik(x, y, x0, y0, theta, I0, R, q, 4, 0.5);
 	};
 }
 
@@ -395,7 +395,7 @@ GalaxyB::GalaxyB(double _x0, double _y0, double _theta, double _R, double _I0, d
 
 	this->GetIb = [&](double x, double y)
 	{
-		return sersik(x, y, this->x0, this->y0, this->theta, this->I0, this->R, this->q, 4);
+		return ssersik(x, y, this->x0, this->y0, this->theta, this->I0, this->R, this->q, 4, 0.5);
 	};
 }
 
@@ -539,7 +539,14 @@ void PModel::grad(vector<double>& x0, vector<double>& delta, vector<double>& res
 		}
 		x0[i] += delta[i];
 
-		ntcm = (i >= (n - nm));
+		if (i >= (n - nm) || i == 6 || i == 7)
+		{
+			ntcm = true;
+		}
+		else
+		{
+			ntcm = false;
+		}
 
 		this->SetP(x0, ntcm);
 		f1 = this->xisq();

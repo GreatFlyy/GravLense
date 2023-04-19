@@ -1,5 +1,6 @@
 #pragma once
 #include<math.h>
+#include<vector>
 
 using namespace std;
 
@@ -51,3 +52,4 @@ int clamp_u(T x, T u)
 
 
 double sersik(double x, double y, double x0, double y0, double phi, double I, double R, double q, double n);
+double ssersik(double x, double y, double x0, double y0, double phi, double I, double R, double q, double n, double r);

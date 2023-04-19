@@ -20,10 +20,38 @@ double sersik(double x, double y, double x0, double y0, double phi, double I, do
 	x = x - x0;
 	y = y - y0;
 
-	int x1 = x;
+	double x1 = x;
 
 	x = x * cos(phi) - y * sin(phi);
 	y = y * cos(phi) + x1 * sin(phi);
 
 	return I * exp(-k * (pow((sqrt(q * x * x + y * y / q)) / R, 1 / n) - 1));
+}
+
+double ssersik(double x, double y, double x0, double y0, double phi, double I, double R, double q, double n, double r)
+{
+	vector<double> a(4, 0);
+	a[0] = sersik(x + r, y, x0, y0, phi, I, R, q, n);
+	a[1] = sersik(x - r, y, x0, y0, phi, I, R, q, n);
+	a[2] = sersik(x, y + r, x0, y0, phi, I, R, q, n);
+	a[3] = sersik(x, y - r, x0, y0, phi, I, R, q, n);
+	int max = 0;
+	int min = 1;
+	for (int i = 0; i < 4; i++)
+	{
+		if (a[i] > a[max])
+			max = i;
+		if (a[i] < a[min])
+			min = i;
+	}
+	double res = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		if (i != max && i != min)
+		{
+			res += a[i];
+		}
+	}
+	res = res / 2;
+	return res;
 }
