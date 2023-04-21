@@ -10,7 +10,7 @@ double gauss2d(double x, double y, double meanx, double meany, double stdevx, do
 	double a = pow(cos(theta), 2) / (2 * stdevx * stdevx) + pow(sin(theta), 2) / (2 * stdevy * stdevy);
 	double b = sin(2 * theta) / 4 * (-1 / (stdevx * stdevx) + 1 / (stdevy * stdevy));
 	double c = pow(sin(theta), 2) / (2 * stdevx * stdevx) + pow(cos(theta), 2) / (2 * stdevy * stdevy);
-	return exp(-(a * (x - meanx) * (x - meanx) + 2 * b * (x - meanx) * (y - meany) + c * (y - meany) * (y - meany)));
+	return (1/(2 * 3.1415926 * stdevx * stdevy))*exp(-(a * (x - meanx) * (x - meanx) + 2 * b * (x - meanx) * (y - meany) + c * (y - meany) * (y - meany)));
 }
 
 double sersik(double x, double y, double x0, double y0, double phi, double I, double R, double q, double n)

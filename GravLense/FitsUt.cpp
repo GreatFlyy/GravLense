@@ -135,7 +135,7 @@ int writeImage(std::vector<std::vector<double>>& source, string& path)
 
     std::valarray<int> row(vectorLength);
     for (long j = 0; j < vectorLength; ++j) row[j] = j;
-    std::valarray<int> array(nelements);
+    std::valarray<double> array(nelements);
     /* for (int i = 0; i < numberOfRows; ++i)
      {
          array[std::slice(vectorLength * static_cast<int>(i), vectorLength, 1)] = row + i;
@@ -187,6 +187,152 @@ int writeImage(std::vector<std::vector<double>>& source, string& path)
     // the primary HDU; PHDU::write( <args> ) is then used to write the data.
 
     pFits->pHDU().write(fpixel, nelements, array);
+
+
+    // PHDU's friend ostream operator. Doesn't print the entire array, just the
+    // required & user keywords, and is provided largely for testing purposes [see 
+    // readImage() for an example of how to output the image array to a stream].
+
+    std::cout << pFits->pHDU() << std::endl;
+    return 0;
+}
+
+
+
+int write2Image(std::vector<std::vector<double>>& source1, std::vector<std::vector<double>>& source2, string& path)
+{
+    // Create a FITS primary array containing a 2-D image
+    // declare axis arrays.
+    long naxis = 2;
+    long naxes1[2] = { 0, 0 };
+
+    naxes1[0] = source1.size();
+    naxes1[1] = source1[0].size();
+
+    std::vector<long> naxes2(2, 0);
+
+    naxes2[0] = source2.size();
+    naxes2[1] = source2[0].size();
+
+    // declare auto-pointer to FITS at function scope. Ensures no resources
+    // leaked if something fails in dynamic allocation.
+    std::auto_ptr<FITS> pFits(0);
+
+    try
+    {
+        // overwrite existing file if the file already exists.
+
+        const std::string fileName(path);
+
+        // Create a new FITS object, specifying the data type and axes for the primary
+        // image. Simultaneously create the corresponding file.
+
+        // this image is unsigned short data, demonstrating the cfitsio extension
+        // to the FITS standard.
+
+        pFits.reset(new FITS(fileName, DOUBLE_IMG, naxis, naxes1));
+    }
+    catch (FITS::CantCreate)
+    {
+        // ... or not, as the case may be.
+        return -1;
+    }
+
+    // references for clarity.
+
+    long& vectorLength1 = naxes1[0];
+    long& numberOfRows1 = naxes1[1];
+    long nelements1(1);
+
+
+    // Find the total size of the array. 
+    // this is a little fancier than necessary ( It's only
+    // calculating naxes[0]*naxes[1]) but it demonstrates  use of the 
+    // C++ standard library accumulate algorithm.
+
+    nelements1 = std::accumulate(&naxes1[0], &naxes1[naxis], 1, std::multiplies<long>());
+
+
+    long& vectorLength2 = naxes2[0];
+    long& numberOfRows2 = naxes2[1];
+    long nelements2(1);
+
+    nelements2 = naxes2[0] * naxes2[1];
+
+    // create a new image extension with a 300x300 array containing float data.
+
+    /*std::vector<long> extAx(2, 300);*/
+    string newName("SECONDEXT");
+    ExtHDU* imageExt = pFits->addImage(newName, DOUBLE_IMG, naxes2);
+
+    // create a dummy row with a ramp. Create an array and copy the row to 
+    // row-sized slices. [also demonstrates the use of valarray slices].   
+    // also demonstrate implicit type conversion when writing to the image:
+    // input array will be of type float.
+
+    //std::valarray<int> row(vectorLength);
+    //for (long j = 0; j < vectorLength; ++j) row[j] = j;
+    std::valarray<double> array1(nelements1);
+    /* for (int i = 0; i < numberOfRows; ++i)
+     {
+         array[std::slice(vectorLength * static_cast<int>(i), vectorLength, 1)] = row + i;
+     }*/
+
+
+
+    for (int i = 0; i < vectorLength1; i++)
+    {
+        for (int j = 0; j < numberOfRows1; j++)
+        {
+            array1[i * numberOfRows1 + j] = source1[i][j];
+        }
+    }
+
+
+    std::valarray<double> array2(nelements1);
+
+    for (int i = 0; i < vectorLength2; i++)
+    {
+        for (int j = 0; j < numberOfRows2; j++)
+        {
+            array2[i * numberOfRows1 + j] = source2[i][j];
+        }
+    }
+
+    // create some data for the image extension.
+    /*long extElements = std::accumulate(extAx.begin(), extAx.end(), 1, std::multiplies<long>());
+    std::valarray<float> ranData(extElements);
+    const float PIBY(3.14 / 150.);
+    for (int jj = 0; jj < extElements; ++jj)
+    {
+        float arg = PIBY * jj;
+        ranData[jj] = std::cos(arg);
+    }*/
+
+    long  fpixel(1);
+
+    // write the image extension data: also demonstrates switching between
+    // HDUs.
+
+
+    imageExt->write(fpixel, nelements2, array2);
+
+
+    //add two keys to the primary header, one long, one complex.
+
+    /*long exposure(1500);
+    std::complex<float> omega(std::cos(2 * 3.14 / 3.), std::sin(2 * 3.14 / 3));
+    pFits->pHDU().addKey("EXPOSURE", exposure, "Total Exposure Time");
+    pFits->pHDU().addKey("OMEGA", omega, " Complex cube root of 1 ");*/
+
+
+
+
+
+    // The function PHDU& FITS::pHDU() returns a reference to the object representing 
+    // the primary HDU; PHDU::write( <args> ) is then used to write the data.
+
+    pFits->pHDU().write(fpixel, nelements1, array1);
 
 
     // PHDU's friend ostream operator. Doesn't print the entire array, just the
